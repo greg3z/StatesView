@@ -13,13 +13,16 @@ class StatesViewController<T>: UIViewController, StatefulViewController {
     var data: Cardinality<T>? {
         didSet {
             endLoading()
+            dataDidSet()
         }
     }
-
+    
     init(dataOrigin: DataOrigin<T>) {
         super.init(nibName: nil, bundle: nil)
         switch dataOrigin {
-        case .Direct(let data): self.data = data
+        case .Local(let data):
+            self.data = data
+            dataDidSet()
         case .Distant(let callback):
             startLoading()
             callback() {
@@ -46,6 +49,16 @@ class StatesViewController<T>: UIViewController, StatefulViewController {
         return data != nil
     }
     
+    func dataDidSet() {
+        
+    }
+    
+    func handleErrorWhenContentAvailable(error: ErrorType) {
+        let alertController = UIAlertController(title: "Ooops", message: "Something went wrong.", preferredStyle: .Alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+        presentViewController(alertController, animated: true, completion: nil)
+    }
+    
 }
 
 enum Cardinality<T> {
@@ -54,7 +67,7 @@ enum Cardinality<T> {
 }
 
 enum DataOrigin<T> {
-    case Direct(Cardinality<T>)
+    case Local(Cardinality<T>)
     case Distant((DistantDataResult<T> -> Void) -> Void)
 }
 
