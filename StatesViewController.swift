@@ -10,6 +10,7 @@ import UIKit
 
 class StatesViewController<T>: UIViewController, StatefulViewController {
 
+    let dataOrigin: DataOrigin<T>
     var data: T? {
         didSet {
             endLoading()
@@ -18,7 +19,13 @@ class StatesViewController<T>: UIViewController, StatefulViewController {
     }
     
     init(dataOrigin: DataOrigin<T>) {
+        self.dataOrigin = dataOrigin
         super.init(nibName: nil, bundle: nil)
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        initViews()
         switch dataOrigin {
         case .Local(let data):
             self.data = data
@@ -29,15 +36,12 @@ class StatesViewController<T>: UIViewController, StatefulViewController {
                 res in
                 switch res {
                 case .Success(let data): self.data = data
-                case .Error(let error): self.endLoading(true, error: error, completion: nil)
+                case .Error(let error):
+                    (self.errorView as? UILabel)?.text = "error : \(error)"
+                    self.endLoading(true, error: error, completion: nil)
                 }
             }
         }
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        initViews()
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -54,7 +58,7 @@ class StatesViewController<T>: UIViewController, StatefulViewController {
     }
     
     func handleErrorWhenContentAvailable(error: ErrorType) {
-        let alertController = UIAlertController(title: "Ooops", message: "Something went wrong.", preferredStyle: .Alert)
+        let alertController = UIAlertController(title: "Ooops", message: "Something went wrong. \(error)", preferredStyle: .Alert)
         alertController.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
         presentViewController(alertController, animated: true, completion: nil)
     }
