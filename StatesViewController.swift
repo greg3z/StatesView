@@ -10,7 +10,7 @@ import UIKit
 
 class StatesViewController<T>: UIViewController, StatefulViewController {
 
-    var data: Cardinality<T>? {
+    var data: T? {
         didSet {
             endLoading()
             dataDidSet()
@@ -61,18 +61,13 @@ class StatesViewController<T>: UIViewController, StatefulViewController {
     
 }
 
-enum Cardinality<T> {
-    case One(T)
-    case Many(Book<T>)
-}
-
 enum DataOrigin<T> {
-    case Local(Cardinality<T>)
+    case Local(T)
     case Distant((DistantDataResult<T> -> Void) -> Void)
 }
 
 enum DistantDataResult<T> {
-    case Success(Cardinality<T>)
+    case Success(T)
     case Error(ErrorType)
 }
 
