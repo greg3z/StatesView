@@ -32,21 +32,22 @@ class StatesViewController<T>: UIViewController, StatefulViewController {
             dataDidSet()
         case .Distant(let callback):
             startLoading()
-            callback() {
-                res in
-                switch res {
-                case .Success(let data): self.data = data
-                case .Error(let error):
-                    (self.errorView as? UILabel)?.text = "error : \(error)"
-                    self.endLoading(true, error: error, completion: nil)
-                }
-            }
+            callback(dataReceived)
         }
     }
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         setupInitialViewState()
+    }
+    
+    func dataReceived(result: DistantDataResult<T>) {
+        switch result {
+        case .Success(let data): self.data = data
+        case .Error(let error):
+            (self.errorView as? UILabel)?.text = "error : \(error)"
+            self.endLoading(true, error: error, completion: nil)
+        }
     }
     
     func hasContent() -> Bool {
