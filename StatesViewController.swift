@@ -8,32 +8,25 @@
 
 import UIKit
 
-class StatesViewController<T>: UIViewController, StatefulViewController {
+class StatesViewController: UIViewController, StatefulViewController {
 
-    let dataOrigin: DataOrigin<T>
-    var data: T? {
-        didSet {
-            endLoading()
-            dataDidSet()
-        }
+    var viewController: UIViewController?
+    var callback: (Result<UIViewController> -> Void) -> Void
+    
+    init(callback: (Result<UIViewController> -> Void) -> Void) {
+        self.callback = callback
+        super.init(nibName: nil, bundle: nil)
     }
     
-    init(dataOrigin: DataOrigin<T>) {
-        self.dataOrigin = dataOrigin
-        super.init(nibName: nil, bundle: nil)
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         initViews()
-        switch dataOrigin {
-        case .Local(let data):
-            self.data = data
-            dataDidSet()
-        case .Distant(let callback):
-            startLoading()
-            callback(dataReceived)
-        }
+        startLoading()
+        callback(viewControllerDidLoad)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -41,20 +34,21 @@ class StatesViewController<T>: UIViewController, StatefulViewController {
         setupInitialViewState()
     }
     
-    func dataReceived(result: DistantDataResult<T>) {
-        switch result {
-        case .Success(let data): self.data = data
-        case .Error(let error):
-            (self.errorView as? UILabel)?.text = "error : \(error)"
-            self.endLoading(true, error: error, completion: nil)
-        }
-    }
-    
     func hasContent() -> Bool {
-        return data != nil
+        return viewController != nil
     }
     
-    func dataDidSet() {
+    func viewControllerDidLoad(result: Result<UIViewController>) {
+        switch result {
+        case .Success(let viewController):
+            self.viewController = viewController
+            endLoading()
+            viewController.view.frame = view.bounds
+            view.addSubview(viewController.view)
+            addChildViewController(viewController)
+        case .Error(let error):
+            endLoading(error: error)
+        }
         
     }
     
@@ -64,16 +58,6 @@ class StatesViewController<T>: UIViewController, StatefulViewController {
         presentViewController(alertController, animated: true, completion: nil)
     }
     
-}
-
-enum DataOrigin<T> {
-    case Local(T)
-    case Distant((DistantDataResult<T> -> Void) -> Void)
-}
-
-enum DistantDataResult<T> {
-    case Success(T)
-    case Error(ErrorType)
 }
 
 extension StatefulViewController {
@@ -102,4 +86,9 @@ extension StatefulViewController {
         }()
     }
     
+}
+
+enum Result<T> {
+    case Success(T)
+    case Error(ErrorType)
 }
