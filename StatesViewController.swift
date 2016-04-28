@@ -9,12 +9,10 @@
 import UIKit
 
 class StatesViewController: UIViewController, StatefulViewController {
-
-    var viewController: UIViewController?
-    var callback: (Result<UIViewController> -> Void) -> Void
     
-    init(callback: (Result<UIViewController> -> Void) -> Void) {
-        self.callback = callback
+    var viewController: UIViewController?
+    
+    init() {
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -26,7 +24,6 @@ class StatesViewController: UIViewController, StatefulViewController {
         super.viewDidLoad()
         initViews()
         startLoading()
-        callback(viewControllerDidLoad)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -38,18 +35,20 @@ class StatesViewController: UIViewController, StatefulViewController {
         return viewController != nil
     }
     
-    func viewControllerDidLoad(result: Result<UIViewController>) {
-        switch result {
-        case .Success(let viewController):
-            self.viewController = viewController
-            endLoading()
-            viewController.view.frame = view.bounds
-            view.addSubview(viewController.view)
-            addChildViewController(viewController)
-        case .Error(let error):
-            endLoading(error: error)
-        }
-        
+    func setChildViewController(viewController: UIViewController) {
+        self.viewController = viewController
+        viewController.view.frame = view.bounds
+        view.addSubview(viewController.view)
+        addChildViewController(viewController)
+        endLoading()
+    }
+    
+    func setEmpty() {
+        endLoading()
+    }
+    
+    func setError(error: ErrorType) {
+        endLoading(error: error)
     }
     
     func handleErrorWhenContentAvailable(error: ErrorType) {
@@ -86,9 +85,4 @@ extension StatefulViewController {
         }()
     }
     
-}
-
-enum Result<T> {
-    case Success(T)
-    case Error(ErrorType)
 }
