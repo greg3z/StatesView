@@ -1,6 +1,6 @@
 //
-//  StatesViewController.swift
-//  StatesViewController
+//  StatesView.swift
+//  StatesView
 //
 //  Created by Grégoire Lhotellier on 12/04/2016.
 //  Copyright © 2016 Grégoire Lhotellier. All rights reserved.
@@ -8,7 +8,7 @@
 
 import UIKit
 
-class StatesViewController: UIViewController, StatefulViewController {
+class StatesView: UIViewController, StatefulViewController {
     
     var viewController: UIViewController?
     
