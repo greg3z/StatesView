@@ -8,9 +8,17 @@
 
 import UIKit
 
-class StatesView: UIViewController, StatefulViewController {
+final class StatesView: UIViewController, StatefulViewController {
     
-    var viewController: UIViewController?
+    var childView: UIViewController? {
+        didSet {
+            guard let childView = childView else { return }
+            childView.view.frame = view.bounds
+            view.addSubview(childView.view)
+            addChildViewController(childView)
+            endLoading()
+        }
+    }
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -32,15 +40,7 @@ class StatesView: UIViewController, StatefulViewController {
     }
     
     func hasContent() -> Bool {
-        return viewController != nil
-    }
-    
-    func setChildViewController(viewController: UIViewController) {
-        self.viewController = viewController
-        viewController.view.frame = view.bounds
-        view.addSubview(viewController.view)
-        addChildViewController(viewController)
-        endLoading()
+        return childView != nil
     }
     
     func setEmpty() {
